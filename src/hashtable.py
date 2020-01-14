@@ -1,6 +1,9 @@
+import hashlib
+
 # '''
 # Linked List hash table key/value pair
 # '''
+
 class LinkedPair:
     def __init__(self, key, value):
         self.key = key
@@ -23,7 +26,9 @@ class HashTable:
 
         You may replace the Python hash with DJB2 as a stretch goal.
         '''
-        return hash(key)
+        # encodes key to bytes, converts to hexidecimal, converts to int base 16, moudulo by capacity
+        hash_ = int(hashlib.sha256(key.encode()).hexdigest(), base=16)
+        return hash_
 
 
     def _hash_djb2(self, key):
@@ -51,7 +56,15 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        key_ = self._hash_mod(key)
+        
+        if self.storage[key_]:
+            original = self.storage[key_]
+            self.storage[key_]=LinkedPair(key, value)
+            self.storage[key_].next = original
+
+        else:
+            self.storage[key_] = LinkedPair(key,value)
 
 
 
@@ -63,7 +76,28 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        key_ = self._hash_mod(key)
+        #next_key = self.storage[key_].next
+
+        if self.storage[key_]:
+            next_key = self.storage[key_].next
+            if self.storage[key_].key == key:
+                self.storage[key_].value = None
+                #break
+            
+            else:
+                while next_key != None:
+
+                    if next_key.key == key:
+                        next_key.value = None
+                        break
+                    
+                    else:
+                        next_key = next_key.next
+
+
+        else:
+            print('Key does not exist') # raise keyerr
 
 
     def retrieve(self, key):
@@ -74,7 +108,26 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        key_ = self._hash_mod(key)
+        next_key = self.storage[key_].next
+
+        if self.storage[key_]:
+            
+            if self.storage[key_].key == key:
+                return self.storage[key_].value
+            
+            else:
+                while next_key != None:
+                    
+                    if next_key.key == key:
+                        return next_key.value
+                    
+                    else:
+                        next_key = next_key.next
+            
+        else:
+            return None
+
 
 
     def resize(self):
@@ -84,7 +137,47 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        self.capacity = self.capacity * 2
+        new_storage = [None] * self.capacity
+        idx = 0
+        next_key = self.storage[idx].next 
+        
+        for ele in self.storage:
+            next_key = ele.next
+            if ele:
+                
+                k = self._hash_mod(ele.key)
+                
+                if new_storage[k]:
+                    original = new_storage[k]
+                    new_storage[k] = LinkedPair(ele.key, ele.value)
+                    new_storage[k].next = original
+                
+                else:
+                    new_storage[k] = LinkedPair(ele.key, ele.value)
+                
+                while next_key != None:
+                    k = self._hash_mod(next_key.key)
+
+                    if new_storage[k]:
+                        original = new_storage[k]
+                        new_storage[k] = LinkedPair(next_key.key, next_key.value)
+                        new_storage[k].next = original
+
+                    else:
+                        new_storage[k] = Linked_pair(next_key.key, next_key.value)
+
+                    next_key = next_key.next
+        self.storage = new_storage
+
+
+
+                     
+
+
+
+
+
 
 
 
